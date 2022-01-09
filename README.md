@@ -8,7 +8,6 @@ Get started with Makefile:
 4. Run `make up`
 4. Run `make migration`
 5. Run `make start`
-6. Run `yarn typeorm migration:run` in Docker container
 
 Get started without Makefile:
 
