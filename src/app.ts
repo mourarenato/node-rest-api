@@ -1,13 +1,13 @@
-import express, { Application } from 'express'; 
+import express, { Application } from 'express';
 import morgan from 'morgan';
-import "reflect-metadata";
+import 'reflect-metadata';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 dotenv.config();
 
-const app: Application = express(); 
+const app: Application = express();
 
-// settings 
+// settings
 const PORT = process.env.DEFAULT_PORT;
 const HOST = '10.10.0.22';
 
