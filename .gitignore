@@ -8,3 +8,4 @@ dist/
 logs/
 *.env
 data/
+*docker-compose.yml

@@ -5,13 +5,14 @@ fileMode: ##@Configuration Sets git fileMode to false
 files: ##@Copy files and set permissions
 	sudo cp .env.example .env
 	sudo cp docker-compose.example.yml docker-compose.yml
+	sudo mkdir logs
 	sudo chmod 777 -R *
 
 install: ##Install dependencies
 	@echo "Installing dependencies"
 	docker-compose up -d
-	sudo chmod 777 -R /dist
-	sudo chmod 777 -R /node_modules
+	sudo chmod 777 -R dist/
+	sudo chmod 777 -R node_modules/
 
 up: ##Up containers
 	docker-compose up -d

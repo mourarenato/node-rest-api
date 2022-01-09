@@ -16,10 +16,11 @@ Get started without Makefile:
 2. Copy `docker-compose.yml.example` to `docker-compose.yml`
 3. Edit the `docker-compose.yml` with your Docker information
 4. Checks database settings in `.env` file
-4. Run `docker-compose up -d` command
-5. Run `sudo chmod 777 -R /dist;sudo chmod 777 -R /node_modules` command
-6. Run `yarn typeorm migration:run` in Docker container to run all migrations
-7. Run `docker exec -it node-rest bash -c "npm start"` to start server
+5. Run `docker-compose up -d` command
+6. Run `sudo chmod 777 -R dist/;sudo chmod 777 -R node_modules/` command
+7. Run `sudo mkdir logs;sudo chmod 777 -R logs/` command
+8. Run `yarn typeorm migration:run` in Docker container to run all migrations
+9. Run `docker exec -it node-rest bash -c "npm start"` to start server
 
 # Project information
 
