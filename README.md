@@ -48,5 +48,5 @@ Example of request (POST):
 
 `To get a registered user`, send request (GET) to URL http://10.10.0.22:4000/api/auth/profile?API_KEY=Your-JWT-Token
 
-`To delete a user`, send request (DELETE) to URL http://10.10.0.22:4000/api/auth/delete?API_KEY=Your-JWT-Token
+`To delete your current user`, send request (DELETE) to URL http://10.10.0.22:4000/api/auth/delete?API_KEY=Your-JWT-Token
 
