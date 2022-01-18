@@ -44,7 +44,9 @@ Example of request (POST):
 
 `To register a user`, send request (POST) to URL http://10.10.0.22:4000/api/auth/signup in Postman (or another).
 
-`To login with user`, send request (POST) to URL http://10.10.0.22:4000/api/auth/signin. You will receive a JWT token in request header (auth-token) as soon as you enter.
+`To login with user`, send request (POST) to URL http://10.10.0.22:4000/api/auth/signin. You will receive a JWT token in response.
 
 `To get a registered user`, send request (GET) to URL http://10.10.0.22:4000/api/auth/profile?API_KEY=Your-JWT-Token
+
+`To delete a user`, send request (DELETE) to URL http://10.10.0.22:4000/api/auth/delete?API_KEY=Your-JWT-Token
 

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { logError } from '../logger';
 
 interface IPayload {
-  _id: string;
+  id: string;
   iat: number;
   exp: number;
 }
@@ -23,7 +23,7 @@ export const TokenValidation = (
       token,
       process.env.TOKEN_SECRET || 'tokentest'
     ) as IPayload;
-    req.userId = payload._id;
+    req.userId = payload.id;
 
     next();
   } catch (e) {

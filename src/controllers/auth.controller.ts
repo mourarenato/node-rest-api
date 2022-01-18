@@ -5,6 +5,10 @@ import { getConnection, getRepository } from 'typeorm';
 import jwt from 'jsonwebtoken';
 import { logError, logApi } from '../logger';
 import hash from 'crypto';
+import jwtDecode from 'jwt-decode';
+
+const errorUser = 'Email or password is wrong!';
+const errorLogin = 'You must send user email and password!';
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -15,14 +19,14 @@ export const signup = async (req: Request, res: Response) => {
       req.body.password
     );
 
-    if (resultValidateCredentials == false) {
-      return res.status(400).json('Should inform login and password!');
+    if (resultValidateCredentials === false) {
+      return res.status(400).json(errorLogin);
     }
 
-    const resultSearchUser = await searchUser(req.body.email);
+    const resultSearchUser = await findUserByEmail(req.body.email);
 
-    if (resultSearchUser == null) {
-      const errorUser = 'Email is already! ';
+    if (resultSearchUser === null) {
+      const errorUser = 'Email already exists! ';
       logApi(errorUser);
       return res.status(400).json(errorUser);
     }
@@ -44,7 +48,7 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
-async function searchUser(email: string) {
+async function findUserByEmail(email: string) {
   const userRepository = getRepository(User);
 
   const userLogin = await userRepository
@@ -63,8 +67,7 @@ async function searchUser(email: string) {
 
 async function validateLoginAndPassword(login: string, password: string) {
   if (!login || !password) {
-    const errorPassword = 'Should inform login and password!';
-    logApi(errorPassword);
+    logApi(errorLogin);
     return false;
   }
   return true;
@@ -72,22 +75,26 @@ async function validateLoginAndPassword(login: string, password: string) {
 
 export const signin = async (req: Request, res: Response) => {
   try {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    const resultValidateCredentials = await validateLoginAndPassword(
+      email,
+      password
+    );
+
+    if (resultValidateCredentials === false) {
+      return res.status(400).json(errorLogin);
+    }
+
     const userRepository = getRepository(User);
     const cryptPassword = JSON.stringify(
-      hash.createHmac('sha256', req.body.password).digest('hex')
+      hash.createHmac('sha256', password).digest('hex')
     );
-    const email = req.body.email;
 
-    const user = await userRepository
-      .createQueryBuilder()
-      .select('user')
-      .from(User, 'user')
-      .where(`user.password ::jsonb @> '${cryptPassword}'`)
-      .andWhere(`user.email = '${email}'`)
-      .getMany();
+    const user = await findUser(userRepository, email, cryptPassword);
 
-    if (user.length == 0 || user == null) {
-      const errorUser = 'Email or password is wrong!';
+    if (!user) {
       logApi(errorUser);
       return res.status(400).json(errorUser);
     }
@@ -102,20 +109,97 @@ export const signin = async (req: Request, res: Response) => {
       }
     );
 
-    return res.header('auth-token', token).status(200).json(user);
+    //return res.header('auth-token', token).status(200).json(user); //alternative in header
+    return res.status(200).json(token);
   } catch (e) {
     logError(`${e}`);
     return res.status(500).json(`${e}`);
   }
 };
 
+async function findUser(
+  userRepository: any,
+  email: string,
+  cryptPassword: string
+) {
+  const user = await userRepository
+    .createQueryBuilder()
+    .select('user')
+    .from(User, 'user')
+    .where(`user.password ::jsonb @> '${cryptPassword}'`)
+    .andWhere(`user.email = '${email}'`)
+    .getMany();
+
+  if (user.length == 0 || user == null) {
+    return false;
+  }
+  return user;
+}
+
 export const profile = async (req: Request, res: Response) => {
   try {
-    const userRepository = getRepository(User);
-    const user = await userRepository.findOne(req.userId);
+    const email = req.body.email;
+    const password = req.body.password;
 
-    if (!user) return res.status(404).json('No User found!');
-    res.json(user);
+    const resultValidateCredentials = await validateLoginAndPassword(
+      email,
+      password
+    );
+
+    if (resultValidateCredentials === false) {
+      return res.status(400).json(errorLogin);
+    }
+
+    const userRepository = getRepository(User);
+    const cryptPassword = JSON.stringify(
+      hash.createHmac('sha256', password).digest('hex')
+    );
+
+    const user = await findUser(userRepository, email, cryptPassword);
+
+    if (!user) {
+      return res.status(404).json('No User found!');
+    }
+    return res.json(user);
+  } catch (e) {
+    logError(`${e}`);
+    return res.status(500).json(`${e}`);
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  try {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    const resultValidateCredentials = await validateLoginAndPassword(
+      email,
+      password
+    );
+
+    if (resultValidateCredentials === false) {
+      return res.status(400).json(errorLogin);
+    }
+
+    const userRepository = getRepository(User);
+    const cryptPassword = JSON.stringify(
+      hash.createHmac('sha256', password).digest('hex')
+    );
+
+    const user = await findUser(userRepository, email, cryptPassword);
+
+    if (!user) {
+      return res.status(404).json('No User found!');
+    }
+
+    const tokenDecoded: JSON = jwtDecode(req.query.API_KEY);
+
+    if (tokenDecoded.id[0].id !== user[0].id) {
+      return res.status(401).json(`You can just only delete your own user`);
+    }
+
+    await userRepository.delete(user);
+    return res.status(200).json('User deleted with success!');
   } catch (e) {
     logError(`${e}`);
     return res.status(500).json(`${e}`);
